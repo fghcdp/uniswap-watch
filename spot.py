@@ -3,6 +3,7 @@ import requests
 import time
 import argparse
 import random
+import pickle
 import get_uni
 
 # ETHERSCAN API KEY
@@ -36,9 +37,9 @@ def get_eth_txn_status(address, block):
     print(len(result))
     if len(result) == 0:
         return
-
-    for key in result[0].keys():
-        print(key, result[0][key])
+    #
+    # for key in result[0].keys():
+    #     print(key, result[0][key])
 
     matches = []
 
@@ -104,17 +105,27 @@ uniswaps = get_uni.uniswaps
 random.shuffle(uniswaps)
 
 tokenMatches = []
-for i, uniswap in enumerate(uniswaps[:100]):
+for i, uniswap in enumerate(uniswaps[:1000]):
     # print("Checking Token {}".format(uniswap['name']))
     print("Checking {}".format(uniswap['tokenAddress']))
     matches = get_eth_txn_status(uniswap['uniswapContract'], block)
+    if matches is None:
+        continue
 
     tokenMatches.append({'name' : uniswap['tokenAddress'],
                          'matches' : matches})
 
-tokenMatches.sort(key=lambda x: matches['matches'][0]['count'], reverse=True)
+print(len(tokenMatches))
 
-for match in tokenMatches:
+# import pdb; pdb.set_trace()
+tokenMatches.sort(key=lambda x: x['matches'][0]['count'], reverse=True)
+
+pickle.dump(tokenMatches, open("token_matches.p", "wb"))
+
+for token in tokenMatches:
+    print(token['matches'][0]['count'])
+
+for matches in tokenMatches:
     print("TOKEN : {}".format(matches['name']))
     print("From\t\tTo\t\tAmount\t\tCount")
     for match in matches['matches'][:5]:
