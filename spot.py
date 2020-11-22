@@ -104,14 +104,22 @@ uniswaps = get_uni.uniswaps
 random.shuffle(uniswaps)
 
 tokenMatches = []
-for i, uniswap in enumerate(uniswaps):
+for i, uniswap in enumerate(uniswaps[:100]):
     # print("Checking Token {}".format(uniswap['name']))
     print("Checking {}".format(uniswap['tokenAddress']))
     matches = get_eth_txn_status(uniswap['uniswapContract'], block)
 
-    tokenMatches.append(matches)
+    tokenMatches.append({'name' : uniswap['tokenAddress'],
+                         'matches' : matches})
 
+tokenMatches.sort(key=lambda x: matches['matches'][0]['count'], reverse=True)
 
+for match in tokenMatches:
+    print("TOKEN : {}".format(matches['name']))
+    print("From\t\tTo\t\tAmount\t\tCount")
+    for match in matches['matches'][:5]:
+        print("{}\t{}\t{}\t{}".format(match['from'], match['to'], match['value'], match['count']))
+    print("\n\n")
 #
 # i = 0
 # while True:
