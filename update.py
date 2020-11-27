@@ -26,12 +26,15 @@ def write_status(status, status_file='./status.json'):
     return
 
 
+# def update_contract(contract)
+
+
 if __name__ == "__main__":
     status = get_status()
     print("Found {} contracts previously synced.".format(len(status['uniswap_contracts']), status['up_to_block']))
 
     print("Getting live contracts from uniswap factory contract...")
-    uniswap_contracts = [] #get_uni_contracts.get_contracts()
+    uniswap_contracts = get_uni_contracts.get_contracts()[:2]
     print("Found {} contracts online".format(len(uniswap_contracts)))
 
     current_contract_addresses = [contract['contract_address'] for contract in status['uniswap_contracts']]
@@ -49,7 +52,7 @@ if __name__ == "__main__":
                 print("0 transactions to this contract, skipping...\n")
                 continue
             else:
-                transactions.to_csv("./txs/{}.csv".format(contract_address))
+                transactions.to_csv("./txs/{}.csv".format(contract_address), index=False)
                 new_contract['name'] = transactions['tokenName'][0]
                 new_contract['last_updated_block'] = transactions['blockNumber'].max()
                 status['uniswap_contracts'].append(new_contract)
@@ -62,25 +65,20 @@ if __name__ == "__main__":
     for contract in [contract for contract in status['uniswap_contracts'] if contract['contract_address'] not in new_contracts]:
         print("Updating transactions for {} - {}".format(contract['name'], contract['contract_address']))
         old_transactions = pd.read_csv("./txs/{}.csv".format(contract['contract_address']))
-        new_transactions = get_txs.get_uniswap_txs(contract['contract_address'], contract['last_updated_block'])
 
-        if len(new_transactions) == 10000:
-            print("WARNING -- More than 10,000 new txs, increase update frequency?")
+        repeat_downloads = True
+        while repeat_downloads:
+            repeat_downloads = False
+            new_transactions = get_txs.get_uniswap_txs(contract['contract_address'], int(contract['last_updated_block']) + 1)
 
-        # for new_tx in new_transactions.iterrows():
-        #     print(new_tx)
-        #     print(new_tx['hash'])
-        #     print("uwu")
-        #     print(old_transactions['hash'])
-        #
-        #     if new_tx['hash'] not in old_transactions['hash']:
-        #         old_transactions.append(new_tx)
-        #
-        #     else:
-        #         print("WARNING -- Already saved this transaction... Not saving.")
+            if len(new_transactions) == 10000:
+                print("WARNING -- More than 10,000 new txs, increase update frequency?")
+                print("Repeating update!")
+                repeat_downloads = True
 
-        transactions = pd.concat([old_transactions, new_transactions])
-        transactions.to_csv("./txs/{}.csv".format(contract['contract_address']))
+            transactions = old_transactions.append(new_transactions)
+
+        transactions.to_csv("./txs/{}.csv".format(contract['contract_address']), index=False)
         contract['last_updated_block'] = int(transactions['blockNumber'].astype('int').max())
         print("Saved {} new contract transactions {}".format(len(new_transactions), contract['name']))
 
