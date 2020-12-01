@@ -15,9 +15,16 @@ def get_uniswap_txs(address, block):
 
     etherscan_url = f'https://api.etherscan.io/api?module=account&action=tokentx&address={address}&startblock={block}&sort=asc&apikey={API_KEY}'
 
-    etherscan_response = requests.get(etherscan_url).json()
+    while True:
+        try:
+            etherscan_response = requests.get(etherscan_url).json()
+            break
+        except Exception as e:
+            print(e)
+            time.sleep(60)
+            continue
+
     result = etherscan_response['result']
-    print(len(result))
 
     if len(result) == 0:
         return None
