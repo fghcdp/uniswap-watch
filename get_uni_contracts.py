@@ -17,3 +17,7 @@ def get_contracts():
                for e in events]
 
     return uniswaps
+
+
+if "__name__" == "__main__":
+    print(get_contracts())
