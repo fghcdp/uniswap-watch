@@ -13,7 +13,7 @@ python get_uni_contracts.py
 
 # Analytics
 * WIP volume plotter 
-~[stinky](analysis/0xF173214C720f58E03e194085B1DB28B50aCDeeaD.png)
+![stinky](analysis/0xF173214C720f58E03e194085B1DB28B50aCDeeaD.png)
 
 # Monitoring todo
 * Sort by hourly increase in volume
