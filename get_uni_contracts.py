@@ -21,3 +21,5 @@ def get_contracts():
 
 if "__name__" == "__main__":
     print(get_contracts())
+
+print(get_contracts())
